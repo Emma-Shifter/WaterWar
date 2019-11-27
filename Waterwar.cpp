@@ -5,85 +5,113 @@
 using namespace std;
 void paintField(int x, int y);
 void paintHeart(int x, int y);
-//void paintShip;
+
 
 int main()
 {
+    setlocale(LC_ALL, "RUSSIAN");//TODO: РІСЃСЏ РїСЂРѕРіСЂР°РјРјР° РІС‹С…РѕРґРёС‚ РЅР° РѕРјР°РЅРЅРѕРј СЏР·С‹РєРµ, С…РѕС‚СЏ СЌС‚РѕС‚ РѕРїРµСЂР°С‚РѕСЂ СЃС‚РѕРёС‚
+
+    int xHeart = 3;
+    int yHeart = 60;
     txCreateWindow(800, 600);
     txSetFillColour(RGB(144, 238, 144));
     txRectangle(0, 0, 800, 600);
     txSetColour(TX_BLACK);
     txLine(400, 170, 400, 600);
     txLine(0, 170, 800, 170);
+    txRectangle(600, 100, 790, 150);
     paintField(50, 250);
     paintField(450, 250);
-    txTextOut(150, 200, "МОЕ ПОЛЕ");
-    txTextOut(530, 200, "ПОЛЕ ПРОТИВНИКА");
-    txTextOut(3, 10, "Перед тобою два поля: твоё и противника. На поле противника некоторые клетки с кораблями");
-    txTextOut(3, 25, "Твоя задача найти все 10 кораблей. Если угадываешь местонахождение корабля, то получаешь");
-    txTextOut(3, 40, "3 сердечка, если нет, то отнимается одно. Удачи!");
+    txTextOut(150, 200, "РњРћР• РџРћР›Р•");
+    txTextOut(530, 200, "РџРћР›Р• РџР РћРўРР’РќРРљРђ");
+    txTextOut(3, 10, "РџРµСЂРµРґ С‚РѕР±РѕСЋ РґРІР° РїРѕР»СЏ: С‚РІРѕС‘ Рё РїСЂРѕС‚РёРІРЅРёРєР°. РќР° РїРѕР»Рµ РїСЂРѕС‚РёРІРЅРёРєР° РЅРµРєРѕС‚РѕСЂС‹Рµ РєР»РµС‚РєРё СЃ РєРѕСЂР°Р±Р»СЏРјРё");
+    txTextOut(3, 25, "РўРІРѕСЏ Р·Р°РґР°С‡Р° РЅР°Р№С‚Рё РІСЃРµ РєРѕСЂР°Р±Р»Рё. Р•СЃР»Рё СѓРіР°РґС‹РІР°РµС€СЊ РјРµСЃС‚РѕРЅР°С…РѕР¶РґРµРЅРёРµ РєРѕСЂР°Р±Р»СЏ, С‚Рѕ РїРѕР»СѓС‡Р°РµС€СЊ");
+    txTextOut(3, 40, "3 СЃРµСЂРґРµС‡РєР°, РµСЃР»Рё РЅРµС‚, С‚Рѕ РѕС‚РЅРёРјР°РµС‚СЃСЏ РѕРґРЅРѕ. РЈРґР°С‡Рё!");
+    txTextOut(3, 55, "P.S. Р СЏРґРѕРј РјРѕРіСѓС‚ СЃС‚РѕСЏС‚СЊ 2 РєРѕСЂР°Р±Р»СЏ");
+    paintHeart(xHeart, yHeart);
 
-    const int numRows = 10;
-    const int numCols = 10;
-    int field[numRows][numCols] = {0};
-
-    for (int row = 0; row < numRows; ++row)
-        for (int col = 0; col < numCols; ++col)
-            field[row][col] = row * col;
-
-    do
+    struct Ship
     {
+        int condition;
+        RECT place;
+    };
+
+    Ship array[10][10];
+    for (int i=0; i<10; i++)
+        for (int j=0; j<10; j++)
+        {
+            int a = rand()%2;//СЃРѕСЃС‚РѕСЏРЅРёРµ
+            int pointX = 450;
+            int pointY = 250;
+            array[i][j].place = {pointX+30*j, pointY+30*i, pointX+30*j+30, pointY+30*i+30};
+            array[i][j].condition = a;
+        }
+//TODO: Р·РґРµСЃСЊ РІС‹РґР°С‘С‚ РѕС€РёР±РєСѓ warning: extended initializer lists only available with -std=c++11 or -std=gnu++11|
+int life = 5;
+   do
+    {
+
         if (txMouseButtons() & 1)
         {
-            if (txMousePos() == field[0][0])//TODO: необходимо, чтобы когда пользователь нажимал кнопку мыши, координаты нажатия сравнивались с координатами ячейки. Как совместить нарисованную ячейку с ячейкой массива?
-            {
+            for (int i=0; i<10; i++)
+                for (int j=0; j<10; j++)
+                {
+                    if (In(txMousePos(), array[i][j].place))
+                    {
+                        if (array[i][j].condition == 1)
+                        {
+                            txRectangle(600, 100, 790, 150);
+                            txTextOut(610, 125, "РўС‹ СѓР±РёР» РєРѕСЂР°Р±Р»СЊ!");
+                            array[i][j].condition = 2;
+                            for(int i=0; i<3; i++)
+                            {
+                                paintHeart(xHeart+55, yHeart);
+                                xHeart = xHeart+55;
+                                life++;
+                            }
+                        }
+                        else if (array[i][j].condition == 0)
+                        {
+                            txRectangle(600, 100, 790, 150);
+                            txTextOut(610, 125, "РўС‹ РїСЂРѕРјР°Р·Р°Р»!");
+                            life = life - 1;//TODO: РµСЃС‚СЊ Р»Рё life--, РµСЃР»Рё РµСЃС‚СЊ life++?
 
+                        }
+                        else if (array[i][j].condition == 2)
+                        {
+                            txRectangle(600, 100, 790, 150);
+                            txTextOut(610, 125, "РўС‹ СѓР¶Рµ СЃСЋРґР° СЃС‚СЂРµР»СЏР»!");
+                        }
 
-            }
+                    }
+                }
         }
     }
-    while(life>0)
-
-
+        while(life>0);
+    //TODO: РІС‹С…РѕРґРёС‚ РѕС€РёР±РєР° error: expected primary-expression before '}' token|
 }
-void paintField(int x, int y)
-{
-    txSetColour(TX_BLACK);
-    txRectangle(x, y, x+300, y+300);
-    for(int i=1; i<10; i++)
+    void paintField(int x, int y)
     {
-        txLine(x+30*i, y, x+30*i, y+300);
-    }
-    for(int i=1; i<11; i++)
-    {
-        txLine(x, y+30*i, x+300, y+30*i);
-    }
-
-}
-void paintHeart (int x, int y)
-{
-    txSetColour(TX_RED);
-    txSetFillColour(TX_RED);
-    POINT heart[16] = {{x, y}, {x+20, y}, {x+20, y+10}, {x+30, y+10}, {x+30, y}, {x+50, y}, {x+50, y+20}, {x+40, y+20}, {x+40, y+30}, {x+30, y+30}, {x+30, y+40}, {x+20, y+40}, {x+20, y+30}, {x+10, y+30}, {x+10, y+20}, {x, y+20}};
-    txPolygon(heart, 16);
-}
-/*void paintShip  //TODO: какие аргументы нужно сюда подставить? Функция присваивает 1(ставит корабль), если в клетке 0(не стоит корабль)
-{
-    for(int i=0; i<10; i++)
-    {
-        int a = rand()%10 + 1;
-        int b = rand()%10 + 1;
-        if (field[a][b] == 0)
-            field[a][b] = 1;
-        else
+        txSetColour(TX_BLACK);
+        txSetFillColour(TX_LIGHTBLUE);
+        txRectangle(x, y, x+300, y+300);
+        for(int i=1; i<10; i++)
         {
-            do
-            {
-                a = rand()%10 + 1;
-                b = rand()%10 + 1;
-            }
-            while (field[a][b] == 0)
-            }
-    }
+            txLine(x+30*i, y, x+30*i, y+300);
+        }
+        for(int i=1; i<11; i++)
+        {
+            txLine(x, y+30*i, x+300, y+30*i);
+        }
 
-}*/
+    }
+    void paintHeart (int x, int y)
+    {
+        txSetColour(TX_RED);
+        txSetFillColour(TX_RED);
+        POINT heart[16] = {{x, y}, {x+20, y}, {x+20, y+10}, {x+30, y+10}, {x+30, y}, {x+50, y}, {x+50, y+20}, {x+40, y+20}, {x+40, y+30}, {x+30, y+30}, {x+30, y+40}, {x+20, y+40}, {x+20, y+30}, {x+10, y+30}, {x+10, y+20}, {x, y+20}};
+        txPolygon(heart, 16);
+    }
+  }
+
+
