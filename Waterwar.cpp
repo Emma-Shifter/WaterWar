@@ -9,7 +9,7 @@ void paintHeart(int x, int y);
 
 int main()
 {
-    setlocale(LC_ALL, "RUSSIAN");//TODO: вся программа выходит на оманном языке, хотя этот оператор стоит
+    setlocale(LC_ALL, "RUSSIAN");//TODO: вся программа выходит на ломанном языке, хотя этот оператор стоит
 
     int xHeart = 3;
     int yHeart = 60;
@@ -112,6 +112,6 @@ int life = 5;
         POINT heart[16] = {{x, y}, {x+20, y}, {x+20, y+10}, {x+30, y+10}, {x+30, y}, {x+50, y}, {x+50, y+20}, {x+40, y+20}, {x+40, y+30}, {x+30, y+30}, {x+30, y+40}, {x+20, y+40}, {x+20, y+30}, {x+10, y+30}, {x+10, y+20}, {x, y+20}};
         txPolygon(heart, 16);
     }
-  }
+
 
 
