@@ -1,18 +1,13 @@
 #include <stdlib.h>
 #include <string>
 #include "TXLib.h"
+#include <ctime>
 
 using namespace std;
 void paintField(int x, int y);
-void paintHeart(int x, int y);
-
-
 int main()
 {
-    setlocale(LC_ALL, "RUSSIAN");//TODO: вся программа выходит на ломанном языке, хотя этот оператор стоит
-
-    int xHeart = 3;
-    int yHeart = 60;
+    setlocale(LC_ALL, "RUSSIAN");
     txCreateWindow(800, 600);
     txSetFillColour(RGB(144, 238, 144));
     txRectangle(0, 0, 800, 600);
@@ -22,13 +17,12 @@ int main()
     txRectangle(600, 100, 790, 150);
     paintField(50, 250);
     paintField(450, 250);
-    txTextOut(150, 200, "МОЕ ПОЛЕ");
-    txTextOut(530, 200, "ПОЛЕ ПРОТИВНИКА");
-    txTextOut(3, 10, "Перед тобою два поля: твоё и противника. На поле противника некоторые клетки с кораблями");
-    txTextOut(3, 25, "Твоя задача найти все корабли. Если угадываешь местонахождение корабля, то получаешь");
-    txTextOut(3, 40, "3 сердечка, если нет, то отнимается одно. Удачи!");
-    txTextOut(3, 55, "P.S. Рядом могут стоять 2 корабля");
-    paintHeart(xHeart, yHeart);
+    txTextOut(150, 200, "MY FIELD");
+    txTextOut(530, 200, "OPPONENT'S FIELD");
+    txTextOut(3, 10, "You can see two fields: your and computer's. On the second field located a lot of ship.");
+    txTextOut(3, 25, "You must find all ship. If you found ship, you will see an article <You found it!!!> ");
+    txTextOut(3, 40, "If you didn't find ship, you will see <You lose(> and you lose one your life");
+    txTextOut(3, 55, "You have only one life at the beginning! There are can be more than two ship near.");
 
     struct Ship
     {
@@ -36,22 +30,22 @@ int main()
         RECT place;
     };
 
+    int life = 1;
     Ship array[10][10];
+    srand(time(NULL));
     for (int i=0; i<10; i++)
         for (int j=0; j<10; j++)
         {
-            int a = rand()%2;//состояние
+            int a = rand()%2;//���������
             int pointX = 450;
             int pointY = 250;
-            array[i][j].place = {pointX+30*j, pointY+30*i, pointX+30*j+30, pointY+30*i+30};
+            array[i][j].place = {pointX+30*i, pointY+30*j, pointX+30*i+30, pointY+30*j+30};
             array[i][j].condition = a;
         }
-//TODO: здесь выдаёт ошибку warning: extended initializer lists only available with -std=c++11 or -std=gnu++11|
-int life = 5;
-   do
-    {
 
-        if (txMouseButtons() & 1)
+    while(txMouseButtons() !=3 || life>0)
+    {
+        if (txMouseButtons() & 1 && life>0)
         {
             for (int i=0; i<10; i++)
                 for (int j=0; j<10; j++)
@@ -60,58 +54,54 @@ int life = 5;
                     {
                         if (array[i][j].condition == 1)
                         {
+                            txSetFillColour(RGB(144, 238, 144));
+                            txSetColour(TX_BLACK);
                             txRectangle(600, 100, 790, 150);
-                            txTextOut(610, 125, "Ты убил корабль!");
-                            array[i][j].condition = 2;
-                            for(int i=0; i<3; i++)
-                            {
-                                paintHeart(xHeart+55, yHeart);
-                                xHeart = xHeart+55;
-                                life++;
-                            }
+                            txTextOut(610, 125, "You found it!!!");
+                            txSetColour(TX_RED);
+                            txTextOut(txMouseX()-400, txMouseY()-3, "X");
+                            life = life+1;
                         }
                         else if (array[i][j].condition == 0)
                         {
+                            txSetFillColour(RGB(144, 238, 144));
+                            txSetColour(TX_BLACK);
                             txRectangle(600, 100, 790, 150);
-                            txTextOut(610, 125, "Ты промазал!");
-                            life = life - 1;//TODO: есть ли life--, если есть life++?
-
+                            txTextOut(610, 125, "You lose( ");
+                            txSetColour(TX_WHITE);
+                            txTextOut(txMouseX()-400, txMouseY()-3, "X");
+                            life = life-1;
                         }
-                        else if (array[i][j].condition == 2)
-                        {
-                            txRectangle(600, 100, 790, 150);
-                            txTextOut(610, 125, "Ты уже сюда стрелял!");
-                        }
-
                     }
                 }
         }
-    }
-        while(life>0);
-    //TODO: выходит ошибка error: expected primary-expression before '}' token|
-}
-    void paintField(int x, int y)
-    {
-        txSetColour(TX_BLACK);
-        txSetFillColour(TX_LIGHTBLUE);
-        txRectangle(x, y, x+300, y+300);
-        for(int i=1; i<10; i++)
+        if (txMouseButtons() & 1 && life<=0)
         {
-            txLine(x+30*i, y, x+30*i, y+300);
-        }
-        for(int i=1; i<11; i++)
-        {
-            txLine(x, y+30*i, x+300, y+30*i);
+            txSetColour(TX_BLACK);
+            txRectangle(600, 100, 790, 150);
+            txTextOut(610, 125, "You lose! GAME OVER!");
         }
 
     }
-    void paintHeart (int x, int y)
+}
+
+
+void paintField(int x, int y)
+{
+    txSetColour(TX_BLACK);
+    txSetFillColour(TX_LIGHTBLUE);
+    txRectangle(x, y, x+300, y+300);
+    for(int i=1; i<10; i++)
     {
-        txSetColour(TX_RED);
-        txSetFillColour(TX_RED);
-        POINT heart[16] = {{x, y}, {x+20, y}, {x+20, y+10}, {x+30, y+10}, {x+30, y}, {x+50, y}, {x+50, y+20}, {x+40, y+20}, {x+40, y+30}, {x+30, y+30}, {x+30, y+40}, {x+20, y+40}, {x+20, y+30}, {x+10, y+30}, {x+10, y+20}, {x, y+20}};
-        txPolygon(heart, 16);
+        txLine(x+30*i, y, x+30*i, y+300);
     }
+    for(int i=1; i<11; i++)
+    {
+        txLine(x, y+30*i, x+300, y+30*i);
+    }
+
+}
+
 
 
 
